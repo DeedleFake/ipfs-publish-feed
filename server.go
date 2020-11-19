@@ -93,6 +93,7 @@ func (s Server) handler(ctx context.Context) http.Handler {
 				log.Printf("Publish: %q", cid)
 
 				go func() {
+					ctx, _ := context.WithTimeout(ctx, time.Hour)
 					info, err := Stat(ctx, s.API, cid)
 					if err != nil {
 						log.Printf("Error: stat %q: %v", cid, err)
