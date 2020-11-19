@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"text/template"
 	"time"
+
+	"github.com/ipfs/go-cid"
 )
 
 // Server is listens to the stream of incoming data and serves the
@@ -56,9 +58,9 @@ func (s Server) Serve(ctx context.Context) error {
 
 // handler returns the handler for the HTTP server.
 func (s Server) handler(ctx context.Context) http.Handler {
-	data := make(chan []string)
+	data := make(chan []cid.Cid)
 	go func() {
-		window := make([]string, 0, 10)
+		window := make([]cid.Cid, 0, 10)
 
 		incoming := make(chan PubSubData)
 		go Subscribe(ctx, incoming, s.API, PublishTopic)
@@ -74,15 +76,20 @@ func (s Server) handler(ctx context.Context) http.Handler {
 					log.Printf("Error: decode data: %v", err)
 					continue
 				}
-				log.Printf("Publish: %q", data)
+				cid, err := cid.Decode(unsafeString(data))
+				if err != nil {
+					log.Printf("Error: decode CID: %v", err)
+					continue
+				}
+				log.Printf("Publish: %q", cid)
 
-				window = append(window, unsafeString(data))
+				window = append(window, cid)
 				if len(window) > WindowSize {
 					copy(window[:WindowSize], window[len(window)-WindowSize:])
 					window = window[:WindowSize]
 				}
 
-			case data <- append([]string(nil), window...):
+			case data <- append([]cid.Cid(nil), window...):
 			}
 		}
 	}()
