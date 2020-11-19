@@ -11,11 +11,18 @@ import (
 	"time"
 )
 
+// Server is listens to the stream of incoming data and serves the
+// feed.
 type Server struct {
+	// Address is the address for the HTTP server to listen on.
 	Address string
-	API     string
+
+	// API is the base URL of the IPFS HTTP API.
+	API string
 }
 
+// Serve runs the server, listening to the stream of incoming data
+// from IPFS and serving a feed of it over HTTP.
 func (s Server) Serve(ctx context.Context) error {
 	server := http.Server{
 		Addr:    s.Address,
@@ -47,6 +54,7 @@ func (s Server) Serve(ctx context.Context) error {
 	}
 }
 
+// handler returns the handler for the HTTP server.
 func (s Server) handler(ctx context.Context) http.Handler {
 	data := make(chan []string)
 	go func() {
@@ -93,6 +101,7 @@ func (s Server) handler(ctx context.Context) http.Handler {
 	})
 }
 
+// feedTmpl is the template for the feed.
 var feedTmpl = template.Must(template.New("atom").Parse(`
 <?xml version="1.0" encoding="utf-8"?>
 

@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+// PubSubData is the structure of data returned from the pubsub
+// system's subscribe endpoint.
 type PubSubData struct {
 	From     string   `json:"from"`
 	Seqno    string   `json:"seqno"`
@@ -17,6 +19,9 @@ type PubSubData struct {
 	Data     string   `json:"data"`
 }
 
+// Subscribe subscribes to a pubsub topic, returning the received data
+// one piece at a time to the provided channel. It stops when the
+// context is canceled.
 func Subscribe(ctx context.Context, data chan<- PubSubData, api, topic string) {
 	var r io.ReadCloser
 	defer func() {

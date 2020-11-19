@@ -12,14 +12,24 @@ import (
 )
 
 const (
+	// PublishTopic is the pubsub topic that is listened on for incoming
+	// data.
 	PublishTopic = "publish"
-	WindowSize   = 10
+
+	// WindowSize is the size of the window of data that is kept track
+	// of. This is also, therefore, the maximum number of items in the
+	// feed.
+	WindowSize = 10
 )
 
+// isContextError returns true if the given error is an error caused
+// by a context.
 func isContextError(err error) bool {
 	return errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded)
 }
 
+// unsafeString performs an unsafe, but extremely efficient,
+// conversion from a []byte to a string.
 func unsafeString(data []byte) string {
 	return *(*string)(unsafe.Pointer(&data))
 }
