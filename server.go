@@ -51,7 +51,7 @@ func (s Server) Serve(ctx context.Context) error {
 
 	select {
 	case <-ctx.Done():
-		ctx, _ = context.WithTimeout(context.Background(), time.Minute)
+		ctx, _ := context.WithTimeout(context.Background(), time.Minute)
 		err := server.Shutdown(ctx)
 		if err != nil {
 			return fmt.Errorf("shutdown HTTP server: %w", err)
@@ -65,12 +65,14 @@ func (s Server) Serve(ctx context.Context) error {
 
 // handler returns the handler for the HTTP server.
 func (s Server) handler(ctx context.Context) http.Handler {
-	data := make(chan []cid.Cid)
+	data := make(chan []FileStat)
 	go func() {
-		window := make([]cid.Cid, 0, 10)
+		window := make([]FileStat, 0, s.FeedSize+1)
 
 		incoming := make(chan PubSubData)
 		go Subscribe(ctx, incoming, s.API, s.Topic)
+
+		stat := make(chan FileStat)
 
 		for {
 			select {
@@ -90,13 +92,24 @@ func (s Server) handler(ctx context.Context) http.Handler {
 				}
 				log.Printf("Publish: %q", cid)
 
-				window = append(window, cid)
+				go func() {
+					ctx, _ := context.WithTimeout(ctx, time.Hour)
+					info, err := Stat(ctx, s.API, cid)
+					if err != nil {
+						log.Printf("Error: stat %q: %v", cid, err)
+						return
+					}
+					stat <- info
+				}()
+
+			case info := <-stat:
+				window = append(window, info)
 				if len(window) > s.FeedSize {
 					copy(window[:s.FeedSize], window[len(window)-s.FeedSize:])
 					window = window[:s.FeedSize]
 				}
 
-			case data <- append([]cid.Cid(nil), window...):
+			case data <- append([]FileStat(nil), window...):
 			}
 		}
 	}()
@@ -124,7 +137,8 @@ var feedTmpl = template.Must(template.New("atom").Parse(`
 
 	{{range .Data}}
 		<entry>
-			<title>{{.}}</title>
+			<title>{{.Hash}}</title>
+			<summary>Type: {{.Type}}, Size: {{.CumulativeSize}}</summary>
 			<link href="{{printf "https://ipfs.io/ipfs/%v" .}}" />
 		</entry>
 	{{end}}
