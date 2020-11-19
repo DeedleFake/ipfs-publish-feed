@@ -51,7 +51,7 @@ func (s Server) Serve(ctx context.Context) error {
 
 	select {
 	case <-ctx.Done():
-		ctx, _ = context.WithTimeout(context.Background(), time.Minute)
+		ctx, _ := context.WithTimeout(context.Background(), time.Minute)
 		err := server.Shutdown(ctx)
 		if err != nil {
 			return fmt.Errorf("shutdown HTTP server: %w", err)
