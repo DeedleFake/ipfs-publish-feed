@@ -21,6 +21,13 @@ type Server struct {
 
 	// API is the base URL of the IPFS HTTP API.
 	API string
+
+	// Topic is the pubsub topic to listen for new publishes on.
+	Topic string
+
+	// FeedSize is the maximum number of publishes to keep track of at a
+	// time.
+	FeedSize int
 }
 
 // Serve runs the server, listening to the stream of incoming data
@@ -63,7 +70,7 @@ func (s Server) handler(ctx context.Context) http.Handler {
 		window := make([]cid.Cid, 0, 10)
 
 		incoming := make(chan PubSubData)
-		go Subscribe(ctx, incoming, s.API, PublishTopic)
+		go Subscribe(ctx, incoming, s.API, s.Topic)
 
 		for {
 			select {
@@ -84,9 +91,9 @@ func (s Server) handler(ctx context.Context) http.Handler {
 				log.Printf("Publish: %q", cid)
 
 				window = append(window, cid)
-				if len(window) > WindowSize {
-					copy(window[:WindowSize], window[len(window)-WindowSize:])
-					window = window[:WindowSize]
+				if len(window) > s.FeedSize {
+					copy(window[:s.FeedSize], window[len(window)-s.FeedSize:])
+					window = window[:s.FeedSize]
 				}
 
 			case data <- append([]cid.Cid(nil), window...):

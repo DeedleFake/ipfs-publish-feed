@@ -11,17 +11,6 @@ import (
 	"github.com/DeedleFake/ipfs-publish-feed/internal/cli"
 )
 
-const (
-	// PublishTopic is the pubsub topic that is listened on for incoming
-	// data.
-	PublishTopic = "publish"
-
-	// WindowSize is the size of the window of data that is kept track
-	// of. This is also, therefore, the maximum number of items in the
-	// feed.
-	WindowSize = 10
-)
-
 // isContextError returns true if the given error is an error caused
 // by a context.
 func isContextError(err error) bool {
@@ -37,6 +26,8 @@ func unsafeString(data []byte) string {
 func run(ctx context.Context) (err error) {
 	addr := flag.String("addr", ":8080", "address to serve HTTP server on")
 	api := flag.String("api", "http://localhost:5001", "base URL of HTTP API")
+	topic := flag.String("topic", "publish", "pubsub topic to subscribe to")
+	size := flag.Int("feedsize", 10, "maximum number of publishes to keep track of")
 	flag.Parse()
 
 	log.Println("Starting server...")
@@ -47,8 +38,10 @@ func run(ctx context.Context) (err error) {
 	}()
 
 	return Server{
-		Address: *addr,
-		API:     *api,
+		Address:  *addr,
+		API:      *api,
+		Topic:    *topic,
+		FeedSize: *size,
 	}.Serve(ctx)
 }
 
