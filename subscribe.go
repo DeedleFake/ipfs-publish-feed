@@ -40,7 +40,7 @@ func Subscribe(ctx context.Context, data chan<- PubSubData, api, topic string) {
 			req, err := http.NewRequestWithContext(
 				ctx,
 				http.MethodPost,
-				fmt.Sprintf("%v/pubsub/pub?arg=%v", api, topic),
+				fmt.Sprintf("%v/api/v0/pubsub/pub?arg=%v", api, topic),
 				nil,
 			)
 			if err != nil {
