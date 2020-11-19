@@ -124,7 +124,7 @@ func (fs FileSize) String() string {
 		size := uint(fs % 1000)
 		fs /= 1000
 
-		sizes = fmt.Sprintf("%v%v%v%v", size, sizeSuffixes[i], sep, sizes)
+		sizes = fmt.Sprintf("%v %v%v%v", size, sizeSuffixes[i], sep, sizes)
 		sep = " "
 	}
 
