@@ -121,7 +121,7 @@ type FileSize uint
 func (fs FileSize) String() string {
 	var sizes, sep string
 	for i := 0; (i < len(sizeSuffixes)) && (fs > 0); i++ {
-		size := fs % 1000
+		size := uint(fs % 1000)
 		fs /= 1000
 
 		sizes = fmt.Sprintf("%v%v%v%v", size, sizeSuffixes[i], sep, sizes)
