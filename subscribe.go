@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -40,7 +41,7 @@ func Subscribe(ctx context.Context, data chan<- PubSubData, api, topic string) {
 			req, err := http.NewRequestWithContext(
 				ctx,
 				http.MethodPost,
-				fmt.Sprintf("%v/api/v0/pubsub/pub?arg=%v", api, topic),
+				fmt.Sprintf("%v/api/v0/pubsub/sub?arg=%v", api, url.QueryEscape(topic)),
 				nil,
 			)
 			if err != nil {
