@@ -136,7 +136,7 @@ var feedTmpl = template.Must(template.New("atom").Parse(`
 
 	{{range .Data}}
 		<entry>
-			<title>{{.}}</title>
+			<title>{{.Hash}}</title>
 			<summary>Type: {{.Type}}, Size: {{.CumulativeSize}}</summary>
 			<link href="{{printf "https://ipfs.io/ipfs/%v" .}}" />
 		</entry>
