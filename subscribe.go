@@ -80,10 +80,10 @@ func Subscribe(ctx context.Context, data chan<- PubSubData, api, topic string) {
 				return
 			}
 
+			log.Printf("Error: decode data: %v", err)
 			if !init() {
 				return
 			}
-
 			continue
 		}
 
